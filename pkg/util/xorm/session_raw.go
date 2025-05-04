@@ -11,6 +11,7 @@ import (
 
 	"github.com/grafana/grafana/pkg/util/xorm/core"
 	"xorm.io/builder"
+	"strings"
 )
 
 func (session *Session) queryPreprocess(sqlStr *string, paramStr ...any) {
@@ -41,10 +42,11 @@ func (session *Session) queryRows(sqlStr string, args ...any) (*core.Rows, error
 				}
 			}()
 		} else {
+			sanitizedSQL := sanitizeSQL(sqlStr)
 			if len(args) > 0 {
-				session.engine.logger.Infof("[SQL] %v %#v", sqlStr, args)
+				session.engine.logger.Infof("[SQL] %v %#v", sanitizedSQL, args)
 			} else {
-				session.engine.logger.Infof("[SQL] %v", sqlStr)
+				session.engine.logger.Infof("[SQL] %v", sanitizedSQL)
 			}
 		}
 	}
@@ -78,6 +80,7 @@ func (session *Session) queryRows(sqlStr string, args ...any) (*core.Rows, error
 	}
 	return rows, nil
 }
+
 
 func (session *Session) queryRow(sqlStr string, args ...any) *core.Row {
 	return core.NewRow(session.queryRows(sqlStr, args...))
